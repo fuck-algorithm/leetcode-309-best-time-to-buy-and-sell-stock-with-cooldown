@@ -44,7 +44,8 @@ describe('createSolutionRegistry', () => {
       const focused = step.frame.nodes.filter(
         (node) => node.status === 'current' || (!node.status && node.kind === 'highlight')
       );
-      expect(focused.length).toBeLessThanOrEqual(1);
+      const focusIds = focused.map((node) => node.id).filter((id) => !id.startsWith('price-'));
+      expect(focusIds.length).toBeLessThanOrEqual(2);
     }
   });
 
@@ -118,26 +119,29 @@ describe('createSolutionRegistry', () => {
 
   it('should expose individual substeps and retain completed daily states', () => {
     const solution = createSolutionRegistry()[0];
-    expect(solution.steps).toHaveLength(14);
-    expect(solution.steps[1].title).toContain('今天收盘时是否持股');
-    expect(solution.steps[2].title).toContain('今天卖出的利润');
-    expect(solution.steps[3].title).toContain('今天结束时空仓');
-    expect(solution.steps[2].frame.nodes.some((node) => node.id === 'hold-1')).toBe(true);
-    expect(solution.steps[3].frame.nodes.some((node) => node.id === 'hold-1')).toBe(true);
-    expect(solution.steps[3].frame.nodes.some((node) => node.id === 'sold-1')).toBe(true);
+    expect(solution.steps).toHaveLength(38);
+    expect(solution.steps[1].title).toContain('读取昨天的持股状态');
+    expect(solution.steps[2].title).toContain('计算续持候选');
+    expect(solution.steps[3].title).toContain('计算买入候选');
+    expect(solution.steps[4].title).toContain('比较候选');
+    expect(solution.steps[2].frame.nodes.some((node) => node.id === 'candidate-hold-keep-1')).toBe(true);
+    expect(solution.steps[4].frame.nodes.some((node) => node.id === 'hold-1')).toBe(true);
+    expect(solution.steps[5].title).toContain('读取昨天持股并准备卖出');
+    expect(solution.steps[8].title).toContain('计算冷冻结束候选');
+    expect(solution.steps[9].title).toContain('比较候选并确定今天空仓利润');
   });
 
   it('should show the previous-day states and explain the cooldown source rule', () => {
     const solution = createSolutionRegistry()[0];
-    const cooldownDecision = solution.steps[7];
-    const result = solution.steps[13];
+    const cooldownDecision = solution.steps[21];
+    const result = solution.steps[37];
     const labels = new Map(cooldownDecision.frame.nodes.map((node) => [node.id, node.label]));
 
     expect(labels.get('hold-2')).toContain('持股 -1');
     expect(labels.get('sold-2')).toContain('今天卖出 2');
     expect(labels.get('rest-2')).toContain('冷冻结束 1');
     expect(cooldownDecision.frame.arrows.map((arrow) => arrow.text).join(' ')).toContain('昨天休息');
-    expect(cooldownDecision.narration).toContain('下一天是冷冻期');
+    expect(solution.steps[21].narration).toContain('昨天卖出的 2 不能买入');
     expect(result.narration).toContain('卖出可得 3');
     expect(result.narration).toContain('休息可得 2');
     expect(result.binding.variables.profit).toBe(3);
