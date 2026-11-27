@@ -146,6 +146,7 @@ describe('createSolutionRegistry', () => {
     expect(labels.get('sold-2')).toContain('今天卖出 2');
     expect(labels.get('rest-2')).toContain('冷冻结束 1');
     expect(cooldownDecision.frame.arrows.map((arrow) => arrow.text).join(' ')).toContain('昨天休息');
+    expect(cooldownDecision.frame.arrows.filter((arrow) => arrow.kind !== 'pointer')).toHaveLength(1);
     expect(solution.steps[21].narration).toContain('昨天卖出的 2 不能买入');
     expect(result.narration).toContain('卖出可得 3');
     expect(result.narration).toContain('休息可得 2');

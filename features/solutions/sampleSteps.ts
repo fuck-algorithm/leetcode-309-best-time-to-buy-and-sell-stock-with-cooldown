@@ -13,6 +13,7 @@ type NarratedAction = {
   target?: StateKey;
   focusSource?: StateKey;
   anchorId?: string;
+  confirmTarget?: boolean;
   candidate?: Candidate;
   chooseCandidates?: Candidate[];
 };
@@ -45,6 +46,7 @@ function buildFrame(options: {
   final?: boolean;
 }): AlgorithmStep['frame'] {
   const { day, target, focusSource, states, candidates, chosen = [], final = false } = options;
+  const activeCandidate = candidates.length > 0 && chosen.length === 0 ? candidates[candidates.length - 1] : undefined;
   const nodes: CanvasNode[] = PRICES.map((price, index) => node(
     `price-${index}`, String(price), X[index], ROWS.price,
     index < day ? 'visited' : 'idle', index === day ? '今天' : `第${index}天`
@@ -56,45 +58,49 @@ function buildFrame(options: {
       const isTarget = stateDay === day && key === target;
       const isFocusedSource = stateDay === day - 1 && key === focusSource;
       const isFinal = final && stateDay === states.length - 1 && (key === 'sold' || key === 'rest');
-      const relevant = isTarget || isFocusedSource || candidates.some((item) => item.source === key && stateDay === day - 1) || final || stateDay < day;
+      const isActiveCandidateSource = activeCandidate?.source === key && stateDay === day - 1;
+      const relevant = isTarget || isFocusedSource || isActiveCandidateSource || final || stateDay < day;
       if (!relevant) return;
 
       nodes.push(node(
         `${key}-${stateDay}`,
         `${STATE_LABELS[key]} ${format(state[key])}`,
         X[stateDay], ROWS[key],
-        isFinal ? 'done' : isTarget ? 'current' : isFocusedSource ? 'current' : candidates.some((item) => item.source === key && stateDay === day - 1) ? 'compare' : 'visited',
+        isFinal ? 'done' : isTarget ? 'current' : isFocusedSource ? 'current' : isActiveCandidateSource ? 'compare' : 'visited',
         `${stateDay}天`
       ));
     });
   });
 
-  candidates.forEach((item) => {
+  candidates.forEach((item, index) => {
     const isChosen = chosen.some((candidate) => candidate.id === item.id);
-    const isLatest = item === candidates[candidates.length - 1] && chosen.length === 0;
+    const isLatest = index === candidates.length - 1 && chosen.length === 0;
     const slot = candidates.filter((candidate) => candidate.target === item.target).findIndex((candidate) => candidate.id === item.id);
     nodes.push(candidateNode(item, day, isChosen ? 'compare' : isLatest ? 'current' : 'visited', slot));
+  });
 
-    const sourceDay = day - 1;
+  if (candidates.length > 0) {
+    const item = candidates[candidates.length - 1];
     arrows.push({
       id: `candidate-arrow-${item.id}`,
-      from: { x: X[sourceDay] + 34, y: ROWS[item.source] },
+      from: { x: X[day - 1] + 34, y: ROWS[item.source] },
       to: { x: X[day] - 24, y: ROWS[item.target] - 48 },
-      text: `昨天${STATE_LABELS[item.source]} → 候选${STATE_LABELS[item.target]}`,
+      text: `昨天${STATE_LABELS[item.source]} → ${item.label}`,
       kind: 'transfer',
       curve: item.source === item.target ? -14 : 14
     });
-  });
+  }
 
   if (chosen.length > 0 && target) {
-    chosen.forEach((item) => {
+    chosen.forEach((item, index) => {
+      const slot = chosen.filter((candidate) => candidate.target === item.target).findIndex((candidate) => candidate.id === item.id);
       arrows.push({
         id: `select-arrow-${item.id}`,
-        from: { x: X[day] + 24, y: ROWS[item.target] - 48 },
+        from: { x: X[day] + 24, y: ROWS[item.target] - 46 - slot * 54 },
         to: { x: X[day] - 34, y: ROWS[target] },
-        text: `比较候选 ${format(item.value)}`,
+        text: `候选 ${format(item.value)}`,
         kind: 'transfer',
-        curve: item.target === target ? -12 : 12
+        curve: index === 0 ? -18 : 18
       });
     });
   }
@@ -103,8 +109,8 @@ function buildFrame(options: {
   const profit = Math.max(states[day].sold, states[day].rest);
   const focus = chosen.length > 0
     ? `比较 ${chosen.map((item) => `${item.label} ${format(item.value)}`).join(' 与 ')}`
-    : candidates.length > 0
-      ? `${candidates[candidates.length - 1].label} ${format(candidates[candidates.length - 1].value)}`
+    : activeCandidate
+      ? `${activeCandidate.label} ${format(activeCandidate.value)}`
       : target ? STATE_LABELS[target] : focusSource ? STATE_LABELS[focusSource] : '最终利润';
   return {
     nodes,
