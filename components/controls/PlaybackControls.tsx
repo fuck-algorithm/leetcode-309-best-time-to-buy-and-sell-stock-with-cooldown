@@ -85,6 +85,7 @@ export function PlaybackControls(props: Props) {
         data-testid="timeline-track"
         className="timeline-track"
         onMouseDown={(event) => {
+          event.preventDefault();
           seekByClientX(event.clientX);
           const move = (moveEvent: MouseEvent) => seekByClientX(moveEvent.clientX);
           const up = () => {

@@ -61,10 +61,10 @@ export function usePlayback(options: UsePlaybackOptions): UsePlaybackResult {
       } else if (event.key === 'ArrowRight') {
         event.preventDefault();
         setCurrentStep((prev) => Math.min(totalSteps - 1, prev + 1));
-      } else if (event.key === ' ') {
+      } else if (event.key === ' ' && !['INPUT', 'TEXTAREA', 'SELECT'].includes((event.target as HTMLElement | null)?.tagName ?? '')) {
         event.preventDefault();
         setPlaying((prev) => !prev);
-      } else if (event.key === 'r' || event.key === 'R') {
+      } else if ((event.key === 'r' || event.key === 'R') && !['INPUT', 'TEXTAREA', 'SELECT'].includes((event.target as HTMLElement | null)?.tagName ?? '')) {
         event.preventDefault();
         setPlaying(false);
         setCurrentStep(0);

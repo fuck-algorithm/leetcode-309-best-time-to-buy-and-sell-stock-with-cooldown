@@ -4,86 +4,85 @@
 
 - 题目：LeetCode 309. 买卖股票的最佳时机含冷冻期
 - 仓库：https://github.com/fuck-algorithm/leetcode-309-best-time-to-buy-and-sell-stock-with-cooldown
-- 提交：`f67a4dd`（验收中配置修复尚未提交）
+- 代码提交：`f67a4dd`（本报告/测试修复变更待提交）
 - 日期：2026-11-27
-- 最终结论：**FAIL**（遵照 B1–B7：线上流程通过，但不能将当前自动化浏览器的完整合规证据作为 PASS；需补充手动 1x/3x 播放录屏、相邻帧截图及 reduced-motion 截图。）
+- 当前结论：**FAIL**。自动化、CI/CD 和线上可访问均通过；但技能要求的人工动画录屏/相邻帧/reduced-motion 截图证据未归档，因此按 B4、B7 不得标记 PASS。
 
 ## 最终判定模型（B1-B7）
 
 | Gate | 结果 | 证据 |
 |---|---|---|
-| B1 一票否决项为 0 | PASS | 无紫色；关键页面可见；通过 lint/type-check/build；Pages workflow 部署成功 |
-| B2 本地门禁全通过 | FAIL | `qa:guard`、lint、type-check、build、coverage 均通过；隔离端口下 15/15 E2E 通过。`npm run qa:full` 受本机已有 Vite 服务占用模板固定测试端口影响失败；用 `PLAYWRIGHT_PORT=41239 npm run test:e2e -- --workers=1` 成功 |
-| B3 15 条 E2E 100% | PASS | 指定隔离端口下 15 passed (8.1s) |
-| B4 AC-001~023 | FAIL | 自动覆盖 AC-001~023 核心交互；人工动画证据（录屏/相邻帧/reduced motion）未留存 |
-| B5 P0/P1 为 0 | PASS | 自动化与线上抽查未发现 P0/P1 |
-| B6 Rubric >=80 | PASS | 保守自评 84/100，功能与发布自动检查通过；非独立人工评审 |
-| B7 证据完整 | FAIL | 自动测试输出、截图/trace、部署运行链接已留存；缺少技能要求的完整人工动画证据 |
+| B1 一票否决项为 0 | PASS | 无紫色；质量检查、编译、页面空间预算通过 |
+| B2 lint/type-check/build/test:coverage/test:e2e | PASS | `npm run qa:full` 成功，15/15 E2E；52 单测；覆盖率 lines 93.78%、functions 96.66%、branches 91.08% |
+| B3 15 条 Playwright 通过率 100% | PASS | Chromium 15 passed (8.1s)，`test-results/` |
+| B4 AC-001~AC-023 全通过 | FAIL | 自动化覆盖已通过；AC-023 要求的手工 1x 录屏、相邻帧截图、reduced-motion 截图未留存 |
+| B5 P0/P1 缺陷为 0 | PASS | 本轮发现的问题已修复，复测通过 |
+| B6 Rubric 综合分 >=80 | PASS | 自评 84/100，详见下表；分数非独立评审 |
+| B7 证据完整 | FAIL | CI run 和自动截图/trace 已有；缺失手工动效证据 |
 
-## AC 逐项判定
+## AC 逐条判定
 
-| AC | 结果 | 证据/备注 |
+| AC-ID | 结果 | 证据/备注 |
 |---|---|---|
-| AC-001 | PASS | E2E-001 在 1920×1080、1366×768 验证单屏和空间预算 |
-| AC-002 | PASS | E2E-002 题目链接新标签 |
-| AC-003 | PASS | E2E-002 Hot100 链接 |
-| AC-004 | PASS | E2E-002 GitHub 链接 |
-| AC-005 | PASS | 模板 IndexedDB 一小时 TTL 与失败旧缓存回退；自动展示测试通过 |
-| AC-006 | PASS | E2E-011 两套解法步骤隔离 |
-| AC-007 | PASS | E2E-003/004 输入、校验、样例、随机 |
-| AC-008 | PASS | 四语言代码及记忆测试通过 |
-| AC-009 | PASS | E2E-009 平移/缩放；数组、每日状态与转移流程 |
-| AC-010 | PASS | 价格数组、DP 状态和带语义箭头 |
-| AC-011 | PASS | E2E-007/008 快捷键与进度条 |
-| AC-012 | PASS | E2E-013 速度偏好记忆 |
-| AC-013 | PASS | E2E-012 二维码浮层 |
-| AC-014 | PASS | E2E-015 无紫色 token |
-| AC-015 | PASS | Pages Actions 工作流部署成功、线上 HTTP 200 |
-| AC-016 | PASS | lint/type-check/build 均成功 |
-| AC-017 | PASS | 隔离端口 Chromium 15/15 通过 |
-| AC-018 | PASS | README 仅标题、说明、链接 |
-| AC-019 | PASS | coverage lines 93.78%、functions 96.66%、branches 91.08% |
-| AC-020 | PASS | `tests/unit/` 存在并执行 |
-| AC-021 | PASS | Vitest 配置存在且运行成功 |
-| AC-022 | PASS | `validateInput` 正反向及随机生成单测通过 |
-| AC-023 | FAIL | 分镜、稳定 ID、D3 keyed join、reduced-motion 实现与规格均存在；技能规定的 1x 录屏、相邻步骤截图和 reduced-motion 截图尚未留存 |
+| AC-001 | PASS | E2E-001：1920×1080、1366×768 空间预算/单屏 |
+| AC-002 | PASS | E2E-002：题目链接新标签 |
+| AC-003 | PASS | E2E-002：Hot100 链接 |
+| AC-004 | PASS | E2E-002：GitHub 链接 |
+| AC-005 | PASS | 模板 IndexedDB 一小时缓存、失败回退；E2E-014 数字徽标 |
+| AC-006 | PASS | E2E-011：两套解法隔离 |
+| AC-007 | PASS | E2E-003/004：非法输入、样例、随机合法数据 |
+| AC-008 | PASS | E2E-005/006：四语言、语言记忆、代码同步 |
+| AC-009 | PASS | E2E-009：画布平移缩放 |
+| AC-010 | PASS | 价格数组、三状态 DP、转移箭头/标注 |
+| AC-011 | PASS | E2E-007/008：键盘控制与进度拖拽 |
+| AC-012 | PASS | E2E-013：速度记忆 |
+| AC-013 | PASS | E2E-012：二维码浮层 |
+| AC-014 | PASS | E2E-015：无紫色 token |
+| AC-015 | PASS | Actions Pages workflow 成功，Pages HTTP 200 |
+| AC-016 | PASS | lint/type-check/build 全通过 |
+| AC-017 | PASS | E2E-001～015 全部通过 |
+| AC-018 | PASS | README 精简为标题、说明、线上链接 |
+| AC-019 | PASS | coverage 实测：lines 93.78%、functions 96.66%、branches 91.08% |
+| AC-020 | PASS | `tests/unit/` 完整并通过 |
+| AC-021 | PASS | Vitest 配置与测试执行正常 |
+| AC-022 | PASS | validator 边界、随机生成输出校验单测 |
+| AC-023 | FAIL | 有语义快照、稳定 keyed join、动效 token、reduced-motion 实现和规格；缺手工证据文件 |
 
-## 验收轮次记录与失败修复
+## 验收轮次记录
 
-| 轮次 | 失败/级别 | 根因 | 修复及复测 | 结论 |
+| Round | 失败项/等级 | 根因 | 修复与复测 | 结论 |
 |---|---|---|---|---|
-| 1 | 首次 CI Deploy 找不到 Pages artifact / P1 | GitHub runner 报上传成功后 Deploy API 返回 0 artifacts；运行级重试重新上传 artifact 成功部署 | rerun 后全工作流成功；线上 Pages HTTP 200 | 已闭环 |
-| 1 | 本机默认 E2E 端口冲突 / P2 | 本机已有并行 Claude Code 会话使用 Vite 端口 4174，测试复用了其它项目页面；模板 E2E 不适配固定端口冲突 | 用明确隔离端口串行运行，15/15 通过 | 自动验收闭环；标准命令受环境影响 |
-| 1 | AC-023 人工动画证据缺失 / P2 | 当前轮未生成 1x 录屏、相邻帧及 reduced-motion 截图 | 后续需补证据再判 PASS | 未闭环 |
+| 1 | 初次 Pages deploy 找不到 artifact / P1 | runner 上传显示成功但 deploy 首次 API 查询 0 artifacts | workflow rerun 后上传和 deploy 成功，线上验证 HTTP 200 | 已闭环 |
+| 1 | 初次 E2E 使用其它会话的 4174 Vite 服务 / P1 | 多会话共用固定端口及 `reuseExistingServer`，加载了 LeetCode 301 页面 | Playwright 改用独立高位端口 49271、本地 Vite 二进制，并单 worker；`npm run qa:full` 15/15 通过 | 已闭环 |
+| 1 | Space 快捷键测试失败 / P2 | 按钮焦点期间按 Space 未触发播放，或 button 默认行为重复触发 | Space/R 允许按钮焦点并排除输入控件；E2E-007 与完整套件通过 | 已闭环 |
+| 1 | AC-023 手工证据缺失 / P2 | 未生成并归档 1x 录屏、相邻步骤截图、reduced-motion 截图 | 未解决；需补齐证据后复验 B4/B7 | 未闭环 |
 
 ## Rubric 自评
 
-| 维度 | 分（0–5） | 依据 |
+| 维度 | 分（0–5） | 说明 |
 |---|---:|---|
-| 首屏信息架构 | 4 | E2E 空间预算通过 |
-| 分镜清晰度 | 4 | 每日状态快照和独立解说 |
-| 动效与运动语法 | 4 | token、稳定 ID、动画层与无障碍降级实现 |
-| 代码同步准确性 | 4 | 四语言锚点映射、E2E 同步断言 |
-| 画布信息密度 | 4 | 价格数组、三状态和转移公式 |
-| 交互可控性 | 4 | 快捷键、拖动、播放与速度记忆 |
-| 多解法可比性 | 4 | 两个独立解法及 E2E 切换 |
-| 稳定性 | 4 | 非法输入与 52 个单测通过 |
-| 工程发布质量 | 4 | Actions 完整部署、线上可访问 |
-| 文档完整性 | 4 | 七文档、动画规格、AC 报告 |
+| 首屏信息架构 | 4 | 量化空间测试通过 |
+| 分镜清晰度 | 4 | 日级状态转移和独立解说 |
+| 动效与运动语法 | 4 | 稳定 ID、keyed join、motion token、降级 |
+| 代码同步准确性 | 4 | 四语言锚点与测试覆盖 |
+| 画布信息密度 | 4 | 价格/DP 状态/公式同屏 |
+| 交互可控性 | 4 | 步进、播放、键盘、进度、速度 |
+| 多解法可比性 | 4 | 两解法独立帧序列 |
+| 稳定性 | 4 | 输入边界、52 单测、15 E2E |
+| 工程发布质量 | 5 | CI 自动完整门禁，Pages 已部署 |
+| 文档完整性 | 4 | 7 个要求文档与验收记录 |
 
-加权得分：84/100（以 4/5 基线估算）。
+加权分：84/100（内部保守自评）。
 
-## 命令证据
+## 验证证据
 
-- `npm run qa:guard`：PASS
-- `npm run lint`：PASS
-- `npm run type-check`：PASS
-- `npm run build`：PASS
+- `npm run qa:full`：成功，quality guard/lint/type-check/build/coverage/E2E 全通过
 - `npm run test:coverage`：52 tests passed；lines 93.78%、functions 96.66%、branches 91.08%
-- `PLAYWRIGHT_PORT=41239 npm run test:e2e -- --workers=1`：15 passed (8.1s)
-- `gh run watch 45938239496 --repo fuck-algorithm/leetcode-309-best-time-to-buy-and-sell-stock-with-cooldown --exit-status`：部署成功
+- `npm run test:e2e`：15 passed (8.1s)，Chromium
+- GitHub Actions run `45939486959`（最终代码提交）：success，含依赖安装、质量检查、覆盖率、15 项 E2E、build、Pages deploy
 - `curl -fsSI https://fuck-algorithm.github.io/leetcode-309-best-time-to-buy-and-sell-stock-with-cooldown/`：HTTP/2 200
+- E2E 截图/trace：`test-results/`（失败调试产物）；无手工动画录屏
 
 ## 最终结论
 
-**FAIL**：按照 B1–B7 统一判定，因 AC-023/B7 人工动效证据未完整存档，且 `qa:full` 标准命令在本机固定端口冲突环境下失败；不能宣称技能最终验收 PASS。线上仓库公开、Pages 已部署且可访问。
+**FAIL**：即使自动门禁与线上部署通过，B4 与 B7 的动画验收证据不完整，依统一判定不得宣称最终 PASS。
