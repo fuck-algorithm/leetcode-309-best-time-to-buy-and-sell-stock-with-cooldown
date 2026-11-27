@@ -44,7 +44,8 @@ export function PlaybackControls(props: Props) {
       return;
     }
     const rect = track.getBoundingClientRect();
-    const ratio = Math.min(Math.max((clientX - rect.left) / rect.width, 0), 1);
+    const thumbInset = 8;
+    const ratio = Math.min(Math.max((clientX - rect.left - thumbInset) / (rect.width - thumbInset * 2), 0), 1);
     const step = Math.round(ratio * (totalSteps - 1));
     onSeek(step);
   }
@@ -84,16 +85,13 @@ export function PlaybackControls(props: Props) {
         ref={trackRef}
         data-testid="timeline-track"
         className="timeline-track"
-        onMouseDown={(event) => {
+        onPointerDown={(event) => {
           event.preventDefault();
+          event.currentTarget.setPointerCapture(event.pointerId);
           seekByClientX(event.clientX);
-          const move = (moveEvent: MouseEvent) => seekByClientX(moveEvent.clientX);
-          const up = () => {
-            window.removeEventListener('mousemove', move);
-            window.removeEventListener('mouseup', up);
-          };
-          window.addEventListener('mousemove', move);
-          window.addEventListener('mouseup', up);
+        }}
+        onPointerMove={(event) => {
+          if (event.buttons > 0) seekByClientX(event.clientX);
         }}
       >
         <div className="timeline-played" data-testid="timeline-played" style={{ width: `${progressPercent}%` }} />

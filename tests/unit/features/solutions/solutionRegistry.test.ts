@@ -118,17 +118,17 @@ describe('createSolutionRegistry', () => {
 
   it('should show the previous-day states and explain the cooldown source rule', () => {
     const solution = createSolutionRegistry()[0];
-    const cooldownDecision = solution.steps[3];
-    const result = solution.steps[5];
+    const cooldownDecision = solution.steps[7];
+    const result = solution.steps[13];
     const labels = new Map(cooldownDecision.frame.nodes.map((node) => [node.id, node.label]));
 
     expect(labels.get('hold-2')).toContain('持股 -1');
-    expect(labels.get('sold-2')).toContain('今日卖出 2');
-    expect(labels.get('rest-2')).toContain('休息 1');
+    expect(labels.get('sold-2')).toContain('今天卖出 2');
+    expect(labels.get('rest-2')).toContain('冷冻结束 1');
     expect(cooldownDecision.frame.arrows.map((arrow) => arrow.text).join(' ')).toContain('昨天休息');
-    expect(cooldownDecision.narration).toContain('不能直接买入');
-    expect(result.narration).toContain('卖出得到 3');
-    expect(result.narration).toContain('休息得到 2');
+    expect(cooldownDecision.narration).toContain('下一天是冷冻期');
+    expect(result.narration).toContain('卖出可得 3');
+    expect(result.narration).toContain('休息可得 2');
     expect(result.binding.variables.profit).toBe(3);
   });
 });

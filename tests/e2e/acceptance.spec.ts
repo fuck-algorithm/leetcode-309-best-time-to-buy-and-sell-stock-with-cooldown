@@ -215,8 +215,9 @@ test.describe('Algorithm Visualization Acceptance', () => {
       return;
     }
 
-    await page.mouse.move(box.x + box.width * 0.85, box.y + box.height / 2);
+    await page.mouse.move(box.x + box.width * 0.1, box.y + box.height / 2);
     await page.mouse.down();
+    await page.mouse.move(box.x + box.width * 0.99, box.y + box.height / 2, { steps: 5 });
     await page.mouse.up();
 
     const step = parseStepText(await page.getByTestId('timeline-meta').innerText());
