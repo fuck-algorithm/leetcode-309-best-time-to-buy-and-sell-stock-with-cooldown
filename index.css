@@ -343,10 +343,19 @@ body {
 
 .canvas-node .node-label {
   fill: #0f1f1b;
-  font-size: 12px;
-  font-weight: 600;
+  font-size: 13px;
+  font-weight: 650;
   pointer-events: none;
+  paint-order: stroke;
+  stroke: rgba(255, 255, 255, 0.92);
+  stroke-width: 2px;
+  stroke-linejoin: round;
   transition: fill 240ms ease;
+}
+
+.canvas-node[data-node-id^='candidate-'] .node-label {
+  font-size: 12px;
+  font-weight: 700;
 }
 
 .canvas-node.node--current .node-label,
@@ -567,7 +576,26 @@ body {
   flex-wrap: wrap;
   justify-content: flex-end;
   gap: var(--space-1);
-  max-width: 46%;
+  max-width: 52%;
+}
+
+.learning-cue-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  border: 1px solid var(--state-compare-stroke);
+  border-radius: 6px;
+  padding: 2px 7px;
+  background: var(--state-compare-fill);
+  color: #3a2a00;
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+}
+
+.learning-cue-item b {
+  color: #805506;
+  font-size: 10px;
 }
 
 .note-item {

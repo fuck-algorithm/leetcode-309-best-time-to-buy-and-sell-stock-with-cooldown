@@ -31,7 +31,7 @@ function node(id: string, label: string, x: number, y: number, status: CanvasNod
 }
 
 function candidateNode(candidate: Candidate, day: number, status: CanvasNode['status'], slot: number): CanvasNode {
-  return node(candidate.id, `${candidate.label} ${format(candidate.value)}`, X[day], ROWS[candidate.target] - 46 - slot * 54, status, '候选', 24);
+  return node(candidate.id, `${candidate.label} · 利润 ${format(candidate.value)}`, X[day], ROWS[candidate.target] - 46 - slot * 54, status, '候选', 24);
 }
 
 function buildFrame(options: {
@@ -46,7 +46,7 @@ function buildFrame(options: {
   const { day, target, focusSource, states, candidates, chosen = [], final = false } = options;
   const nodes: CanvasNode[] = PRICES.map((price, index) => node(
     `price-${index}`, String(price), X[index], ROWS.price,
-    index < day ? 'visited' : index === day ? 'current' : 'idle', index === day ? '今天' : `第${index}天`
+    index < day ? 'visited' : 'idle', index === day ? '今天' : `第${index}天`
   ));
   const arrows: AlgorithmStep['frame']['arrows'] = [];
 
@@ -100,7 +100,11 @@ function buildFrame(options: {
 
   const todayPrice = PRICES[day];
   const profit = Math.max(states[day].sold, states[day].rest);
-  const focus = target ? STATE_LABELS[target] : focusSource ? STATE_LABELS[focusSource] : '最终利润';
+  const focus = chosen.length > 0
+    ? `比较 ${chosen.map((item) => `${item.label} ${format(item.value)}`).join(' 与 ')}`
+    : candidates.length > 0
+      ? `${candidates[candidates.length - 1].label} ${format(candidates[candidates.length - 1].value)}`
+      : target ? STATE_LABELS[target] : focusSource ? STATE_LABELS[focusSource] : '最终利润';
   return {
     nodes,
     edges: [],
@@ -109,16 +113,20 @@ function buildFrame(options: {
       id: 'today-guide',
       targetId: `price-${day}`,
       text: `第 ${day} 天 · 价格 ${todayPrice}`,
-      detail: `本步：${focus}`,
+      detail: target ? `当前要回答：${focus}` : `当前要回答：${focus}`,
       position: 'top',
       variant: 'callout',
       tone: 'accent'
     }],
     notes: [day === 3 && target === 'hold'
       ? '冷冻期：昨天卖出后的今天不能买入；买入候选只从“昨天休息”计算。'
+      : candidates.length > 0
+        ? `当前有 ${candidates.length} 张候选卡；新出现的卡片是本步刚算出的值。`
       : chosen.length > 0
-        ? '先分别算出候选利润，再比较候选；不能把不同状态的利润混成同一个数。'
-        : `跟随高亮焦点：${focus}。箭头指出候选所依赖的昨天状态。`],
+        ? `现在比较 ${chosen.map((item) => `${item.label} ${format(item.value)}`).join(' 与 ')}，选出今天的${target ? STATE_LABELS[target] : '状态'}。`
+        : candidates.length > 0
+          ? `已计算 ${candidates.length} 个候选；本步新增“${candidates[candidates.length - 1].label} ${format(candidates[candidates.length - 1].value)}”。`
+          : `跟随高亮焦点：${focus}。箭头指出候选所依赖的昨天状态。`],
     metrics: final
       ? [
           { label: '末日卖出', value: states[day].sold },
@@ -128,7 +136,9 @@ function buildFrame(options: {
       : [
           { label: '已处理天数', value: `${day + 1}/5` },
           { label: '当前焦点', value: focus },
-          { label: '空仓利润', value: profit }
+          { label: '空仓利润', value: profit },
+          ...candidates.slice(-1).map((item) => ({ label: '候选利润', value: `${item.label} ${format(item.value)}` })),
+          ...(chosen.length > 0 ? [{ label: '比较结果', value: chosen.map((item) => format(item.value)).join(' vs ') }] : [])
         ],
     legend: [
       { status: 'current', label: '本步焦点' },
@@ -207,10 +217,10 @@ export function buildSampleSteps(solution: 'dp' | 'states' = 'dp'): AlgorithmSte
         id: stepId,
         title: `第 ${day} 天：${action.title}`,
         description: action.narration,
-        narration: action.narration,
+        narration: `${action.narration}${action.candidate ? ` 画面中的“${action.candidate.label}”卡片就是这个数，连线表示它的来源。` : ''}`,
         operation: action.operation,
         binding: {
-          anchorIds: [action.target ? 'transition' : 'init'],
+          anchorIds: [action.target ? 'transition' : action.focusSource ? 'transition' : 'init'],
           variables: {
             day,
             price,

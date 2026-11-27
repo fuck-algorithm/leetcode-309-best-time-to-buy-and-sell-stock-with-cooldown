@@ -160,6 +160,9 @@ export function VisualizationCanvas({ data, step, solution, speed = 1 }: Props) 
               {note}
             </span>
           ))}
+          {(step.frame.metrics ?? []).filter((metric) => ['候选利润', '比较结果'].includes(metric.label)).map((metric) => (
+            <span key={metric.label} className="learning-cue-item"><b>{metric.label}</b>{metric.value}</span>
+          ))}
         </div>
       </div>
 
