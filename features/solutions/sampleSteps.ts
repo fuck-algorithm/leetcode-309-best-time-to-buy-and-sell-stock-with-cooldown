@@ -12,6 +12,7 @@ type NarratedAction = {
   narration: string;
   target?: StateKey;
   focusSource?: StateKey;
+  anchorId?: string;
   candidate?: Candidate;
   chooseCandidates?: Candidate[];
 };
@@ -113,19 +114,17 @@ function buildFrame(options: {
       id: 'today-guide',
       targetId: `price-${day}`,
       text: `第 ${day} 天 · 价格 ${todayPrice}`,
-      detail: target ? `当前要回答：${focus}` : `当前要回答：${focus}`,
+      detail: `当前要回答：${focus}`,
       position: 'top',
       variant: 'callout',
       tone: 'accent'
     }],
     notes: [day === 3 && target === 'hold'
       ? '冷冻期：昨天卖出后的今天不能买入；买入候选只从“昨天休息”计算。'
-      : candidates.length > 0
-        ? `当前有 ${candidates.length} 张候选卡；新出现的卡片是本步刚算出的值。`
       : chosen.length > 0
-        ? `现在比较 ${chosen.map((item) => `${item.label} ${format(item.value)}`).join(' 与 ')}，选出今天的${target ? STATE_LABELS[target] : '状态'}。`
+        ? `比较候选 ${chosen.map((item) => `${item.label} ${format(item.value)}`).join(' 与 ')}，选出今天的${target ? STATE_LABELS[target] : '状态'}。`
         : candidates.length > 0
-          ? `已计算 ${candidates.length} 个候选；本步新增“${candidates[candidates.length - 1].label} ${format(candidates[candidates.length - 1].value)}”。`
+          ? `当前有 ${candidates.length} 张候选卡；最新出现的卡片是本步刚算出的值。`
           : `跟随高亮焦点：${focus}。箭头指出候选所依赖的昨天状态。`],
     metrics: final
       ? [
@@ -174,15 +173,15 @@ function makeDayActions(day: number, price: number, previous: State, current: St
   };
 
   return [
-    { title: '读取昨天的持股状态', operation: 'read', focusSource: 'hold', narration: `先读取昨天持股利润 ${format(previous.hold)}，这是今天“继续持有”与“卖出”的共同来源。` },
-    { title: '计算续持候选', operation: 'compare', target: 'hold', candidate: holdKeep, narration: holdKeep.narration },
-    { title: '计算买入候选', operation: 'compare', target: 'hold', candidate: holdBuy, narration: holdBuy.narration },
-    { title: '比较候选并确定今天持股利润', operation: 'compare', target: 'hold', chooseCandidates: [holdKeep, holdBuy], narration: `比较续持 ${format(holdKeep.value)} 与买入 ${format(holdBuy.value)}，今天持股利润取较大值 ${current.hold}。` },
-    { title: '读取昨天持股并准备卖出', operation: 'read', focusSource: 'hold', narration: `卖出必须先持有股票，因此读取昨天持股利润 ${format(previous.hold)}，再加今天价格 ${price}。` },
-    { title: '计算今天卖出利润', operation: 'compare', target: 'sold', candidate: soldCandidate, narration: soldCandidate.narration },
-    { title: '计算继续空仓候选', operation: 'compare', target: 'rest', candidate: restCarry, narration: restCarry.narration },
-    { title: '计算冷冻结束候选', operation: 'compare', target: 'rest', candidate: restCooldown, narration: restCooldown.narration },
-    { title: '比较候选并确定今天空仓利润', operation: 'compare', target: 'rest', chooseCandidates: [restCarry, restCooldown], narration: `比较继续休息 ${format(restCarry.value)} 与冷冻结束 ${format(restCooldown.value)}，今天空仓利润取较大值 ${current.rest}。` }
+    { title: '读取昨天的持股状态', operation: 'read', focusSource: 'hold', anchorId: 'read-hold', narration: `先读取昨天持股利润 ${format(previous.hold)}，这是今天“继续持有”与“卖出”的共同来源。` },
+    { title: '计算续持候选', operation: 'compare', target: 'hold', anchorId: 'hold-keep', candidate: holdKeep, narration: holdKeep.narration },
+    { title: '计算买入候选', operation: 'compare', target: 'hold', anchorId: 'hold-buy', candidate: holdBuy, narration: holdBuy.narration },
+    { title: '比较候选并确定今天持股利润', operation: 'compare', target: 'hold', anchorId: 'choose-hold', chooseCandidates: [holdKeep, holdBuy], narration: `比较续持 ${format(holdKeep.value)} 与买入 ${format(holdBuy.value)}，今天持股利润取较大值 ${current.hold}。` },
+    { title: '读取昨天持股并准备卖出', operation: 'read', focusSource: 'hold', anchorId: 'read-sell', narration: `卖出必须先持有股票，因此读取昨天持股利润 ${format(previous.hold)}，再加今天价格 ${price}。` },
+    { title: '计算今天卖出利润', operation: 'compare', target: 'sold', anchorId: 'sold', candidate: soldCandidate, narration: soldCandidate.narration },
+    { title: '计算继续空仓候选', operation: 'compare', target: 'rest', anchorId: 'rest-carry', candidate: restCarry, narration: restCarry.narration },
+    { title: '计算冷冻结束候选', operation: 'compare', target: 'rest', anchorId: 'rest-cooldown', candidate: restCooldown, narration: restCooldown.narration },
+    { title: '比较候选并确定今天空仓利润', operation: 'compare', target: 'rest', anchorId: 'choose-rest', chooseCandidates: [restCarry, restCooldown], narration: `比较继续休息 ${format(restCarry.value)} 与冷冻结束 ${format(restCooldown.value)}，今天空仓利润取较大值 ${current.rest}。` }
   ];
 }
 
@@ -220,7 +219,7 @@ export function buildSampleSteps(solution: 'dp' | 'states' = 'dp'): AlgorithmSte
         narration: `${action.narration}${action.candidate ? ` 画面中的“${action.candidate.label}”卡片就是这个数，连线表示它的来源。` : ''}`,
         operation: action.operation,
         binding: {
-          anchorIds: [action.target ? 'transition' : action.focusSource ? 'transition' : 'init'],
+          anchorIds: [action.anchorId ?? (action.target || action.focusSource ? 'transition' : 'init')],
           variables: {
             day,
             price,

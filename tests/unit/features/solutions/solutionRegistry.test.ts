@@ -124,8 +124,13 @@ describe('createSolutionRegistry', () => {
     expect(solution.steps[2].title).toContain('计算续持候选');
     expect(solution.steps[3].title).toContain('计算买入候选');
     expect(solution.steps[4].title).toContain('比较候选');
-    expect(solution.steps[2].frame.nodes.some((node) => node.id === 'candidate-hold-keep-1')).toBe(true);
+    expect(solution.steps[2].binding.anchorIds).toContain('hold-keep');
+    expect(solution.steps[3].binding.anchorIds).toContain('hold-buy');
+    expect(solution.steps[4].binding.anchorIds).toContain('choose-hold');
+    expect(solution.steps[2].frame.nodes.find((node) => node.id === 'candidate-hold-keep-1')?.label).toContain('利润 -1');
+    expect(solution.steps[2].frame.arrows.map((arrow) => arrow.text).join(' ')).toContain('昨天持股');
     expect(solution.steps[4].frame.nodes.some((node) => node.id === 'hold-1')).toBe(true);
+    expect(solution.steps[4].frame.metrics?.some((metric) => metric.label === '比较结果')).toBe(true);
     expect(solution.steps[5].title).toContain('读取昨天持股并准备卖出');
     expect(solution.steps[8].title).toContain('计算冷冻结束候选');
     expect(solution.steps[9].title).toContain('比较候选并确定今天空仓利润');

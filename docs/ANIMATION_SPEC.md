@@ -24,7 +24,11 @@
 
 转移定义：`hold[d]=max(hold[d-1], rest[d-1]-price[d])`；`sold[d]=hold[d-1]+price[d]`；`rest[d]=max(rest[d-1], sold[d-1])`。冷冻期通过不生成 `sold[d-1] → hold[d]` 入边体现；第 3 天价格为 0，明确展示昨天 sold=2 被排除，hold 只从昨天 rest=1 转移。
 
-## 3. 运动、状态图例与教学层
+## 3. 画面、解说与代码同步
+
+每个候选子步骤绑定独立 anchor：`hold-keep`、`hold-buy`、`choose-hold`、`read-sell`、`sold`、`rest-carry`、`rest-cooldown`、`choose-rest`。四语言代码都逐项拆开表达式，使行高亮与画布当前候选一致。候选卡用“候选名 · 利润 数值”直写含义，比较帧显示候选数和选择结果。
+
+## 4. 运动、状态图例与教学层
 
 **运动语法：** 使用 `features/animation/motion.ts` 的 `MOTION` token；稳定 ID 的 D3 keyed join；退出统一经 `fadeOutAndRemove`。
 
@@ -32,14 +36,14 @@
 
 **prefers-reduced-motion：** JS 过渡归零、CSS 动效关闭，状态、解说、代码高亮与图例继续更新。
 
-## 4. 辅助结构容器
+## 5. 辅助结构容器
 
 本题是数组与 DP 状态，不使用栈或队列；容器验收不适用。
 
-## 5. 箭头与标注规范
+## 6. 箭头与标注规范
 
 箭头用“昨天 + 状态 → 今天 + 状态”标出来源和目标；价格轨道单独标今天价格。第 3 天持股帧只画昨天 hold/rest 的有效来源，无卖出来源箭头，并在 narration 中解释冷冻期。最终帧仅把 sold/rest 标 done 并并列显示答案候选。
 
-## 6. 验收
+## 7. 验收
 
 画布优先；在 1920×1080、1366×768 验证空间预算。自动化覆盖步骤解说、稳定 ID、代码 anchor、快捷键、拖动、状态转移和全套 15 个 E2E；人工证据仍需 1x/3x 录屏、相邻步骤截图与 reduced-motion 截图。
