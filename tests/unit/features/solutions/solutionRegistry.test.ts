@@ -116,6 +116,17 @@ describe('createSolutionRegistry', () => {
     }
   });
 
+  it('should expose individual substeps and retain completed daily states', () => {
+    const solution = createSolutionRegistry()[0];
+    expect(solution.steps).toHaveLength(14);
+    expect(solution.steps[1].title).toContain('今天收盘时是否持股');
+    expect(solution.steps[2].title).toContain('今天卖出的利润');
+    expect(solution.steps[3].title).toContain('今天结束时空仓');
+    expect(solution.steps[2].frame.nodes.some((node) => node.id === 'hold-1')).toBe(true);
+    expect(solution.steps[3].frame.nodes.some((node) => node.id === 'hold-1')).toBe(true);
+    expect(solution.steps[3].frame.nodes.some((node) => node.id === 'sold-1')).toBe(true);
+  });
+
   it('should show the previous-day states and explain the cooldown source rule', () => {
     const solution = createSolutionRegistry()[0];
     const cooldownDecision = solution.steps[7];

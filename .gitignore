@@ -5,6 +5,9 @@ node_modules
 dist
 dist-ssr
 
+# local LAN links for the Claude Code status line
+server-url.txt
+
 # template-specific: do not commit pre-built artifacts from placeholder data
 templates/dist
 

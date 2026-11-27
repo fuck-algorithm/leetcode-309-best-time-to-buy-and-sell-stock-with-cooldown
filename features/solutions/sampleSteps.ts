@@ -46,7 +46,7 @@ function makeTransitions(): Transition[] {
   ];
 }
 
-function buildFrame(day: number, target: StateKey | null, sourceKeys: StateKey[], states: State[], final = false): AlgorithmStep['frame'] {
+function buildFrame(day: number, target: StateKey | null, sourceKeys: StateKey[], states: State[], completedKeys: StateKey[] = [], final = false): AlgorithmStep['frame'] {
   const nodes: CanvasNode[] = PRICES.map((price, index) => node(
     `price-${index}`, String(price), X[index], ROWS.price,
     index < day ? 'visited' : 'idle', index === day ? '今天' : `第${index}天`
@@ -60,7 +60,7 @@ function buildFrame(day: number, target: StateKey | null, sourceKeys: StateKey[]
       const isSource = stateDay === day - 1 && sourceKeys.includes(key);
       const isFinal = final && stateDay === states.length - 1 && (key === 'sold' || key === 'rest');
       const status = isFinal ? 'done' : isTarget ? 'current' : isSource ? 'compare' : 'visited';
-      const exists = final || stateDay < day || isTarget || isSource;
+      const exists = final || stateDay < day || isTarget || isSource || (stateDay === day && completedKeys.includes(key));
       if (!exists) return;
 
       nodes.push(node(
@@ -134,7 +134,7 @@ export function buildSampleSteps(solution: 'dp' | 'states' = 'dp'): AlgorithmSte
     narration: '开始时手里没有股票、利润为 0。第 0 天买入后持股利润是 −1；因为尚未持有过股票，今天不可能卖出。',
     operation: 'init',
     binding: { anchorIds: ['init'], variables: { day: 0, price: PRICES[0], hold: -1, sold: Number.NEGATIVE_INFINITY, rest: 0 } },
-    frame: buildFrame(0, 'rest', [], states)
+    frame: buildFrame(0, 'rest', [], states, ['hold', 'sold'])
   }];
 
   const transitions = makeTransitions();
@@ -148,8 +148,9 @@ export function buildSampleSteps(solution: 'dp' | 'states' = 'dp'): AlgorithmSte
     };
     states.push(current);
 
-    transitions.forEach((transition) => {
+    transitions.forEach((transition, transitionIndex) => {
       const stepId = steps.length;
+      const completedKeys = transitions.slice(0, transitionIndex).map((item) => item.target);
       steps.push({
         id: stepId,
         title: `第 ${day} 天：${transition.title}`,
@@ -168,7 +169,7 @@ export function buildSampleSteps(solution: 'dp' | 'states' = 'dp'): AlgorithmSte
             profit: Math.max(current.sold, current.rest)
           }
         },
-        frame: buildFrame(day, transition.target, transition.sources, states)
+        frame: buildFrame(day, transition.target, transition.sources, states, completedKeys)
       });
     });
   }
@@ -183,7 +184,7 @@ export function buildSampleSteps(solution: 'dp' | 'states' = 'dp'): AlgorithmSte
     narration: `交易结束时必须空仓。最后一天卖出可得 ${last.sold}，休息可得 ${last.rest}；不把仍持股的利润算作已实现收益，所以返回 ${answer}。`,
     operation: 'return',
     binding: { anchorIds: ['return'], variables: { hold: last.hold, sold: last.sold, rest: last.rest, profit: answer } },
-    frame: buildFrame(PRICES.length - 1, null, [], states, true)
+    frame: buildFrame(PRICES.length - 1, null, [], states, [], true)
   });
   return steps;
 }
